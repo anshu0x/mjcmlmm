@@ -1,0 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: linear-gradient(180deg, #060606 0%, #070a16 100%);
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.connect-wallet {
+  background: linear-gradient(180deg, #58dea2 0%, rgba(9, 133, 74, 0.38) 100%);
+}
+
+.card {
+  background: linear-gradient(180deg, #1a1b1a 0%, rgba(58, 58, 58, 0.31) 100%);
+}
+
+.dcard {
+  background: linear-gradient(180deg, #1a1b1a 0%, rgba(50, 92, 74, 0.31) 100%);
+}
+
+.dashboard{
+  background: linear-gradient(180deg, #070707 0%, #070A16 100%);
+}
+
+.stakingcard{
+  background: linear-gradient(180deg, #222223 0%, #22222300 100%);
+}
