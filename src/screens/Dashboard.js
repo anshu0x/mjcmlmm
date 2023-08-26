@@ -29,7 +29,8 @@ const Dashboard = () => {
 
           const balance = await contract.balanceOf(account);
           const balanceInEth = ethers.utils.formatEther(balance); // Convert to ethers
-          setTokenBalance(balanceInEth);
+          const decBalance = Number(balanceInEth).toFixed(2)
+          setTokenBalance(decBalance);
         } catch (error) {
           console.error("Error fetching token balance:", error);
         }
