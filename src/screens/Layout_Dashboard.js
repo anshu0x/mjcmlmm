@@ -20,7 +20,7 @@ const Layout_Dashboard = () => {
         }
       </div>
       <DashboardNavbar setOpenTab={setOpenTab} />
-      {openTab === 1 ? <Dashboard /> : <Staking />}
+      {openTab === 1 ? <Dashboard /> : <Staking wallet={wallet}/>}
     </div>
   );
 };

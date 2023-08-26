@@ -1,15 +1,15 @@
 import React from "react";
 import { ethers , utils, providers } from "ethers";
 import { useState, useEffect } from "react";
-import Web3Modal from "web3modal";
-import { STAKING_CONTRACT_ADDRESS, STAKING_ABI } from "./constant/index.js";
+import { STAKING_CONTRACT_ADDRESS, STAKING_ABI, CUSTOM_TOKEN_ADDRESS, CUSTOM_TOKEN_ABI } from "./constant/index.js";
 
 
-const Staking = () => {
+const Staking = (props) => {
 
   const plan = 1;
   const duration = 90; 
   const teamSize = 0;
+  const amount = 30000;
   const stakingToken = async (event) => {
     event.preventDefault();
     try {
@@ -17,8 +17,9 @@ const Staking = () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contract = new ethers.Contract(STAKING_CONTRACT_ADDRESS, STAKING_ABI, signer);
-    
-    console.log(contract.address);
+    //const TT_Token_contract = new ethers.Contract(CUSTOM_TOKEN_ADDRESS, CUSTOM_TOKEN_ABI, signer);
+    //onsole.log(contract.address);
+
 
     const tx = await contract.stakeTokens(plan , duration, teamSize);
     // wait for the transaction to get mined
