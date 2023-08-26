@@ -1,6 +1,45 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import StakingTable from "../components/StakingTable";
+import { useMetaMask } from "../hooks/useMetamask";
+import { ethers } from "ethers";
+import { CUSTOM_TOKEN_ADDRESS, CUSTOM_TOKEN_ABI } from "./constant/index.js";
+
 const Dashboard = () => {
+  const { wallet } = useMetaMask();
+  const [account, setAccount] = useState("");
+  const [tokenBalance, setTokenBalance] = useState(0);
+
+  useEffect(() => {
+    if (wallet && wallet.accounts && wallet.accounts.length > 0) {
+      setAccount(wallet.accounts[0]);
+    }
+  }, [wallet]);
+
+  useEffect(() => {
+    const getWalletBalance = async () => {
+      if (account) {
+        try {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const contract = new ethers.Contract(
+            CUSTOM_TOKEN_ADDRESS,
+            CUSTOM_TOKEN_ABI,
+            signer
+          );
+
+          const balance = await contract.balanceOf(account);
+          const balanceInEth = ethers.utils.formatEther(balance); // Convert to ethers
+          setTokenBalance(balanceInEth);
+        } catch (error) {
+          console.error("Error fetching token balance:", error);
+        }
+      }
+    };
+
+    getWalletBalance(); // Call the function when the component mounts or when the account changes
+  }, [account]);
+
+
   return (
     <div className="flex w-full justify-center items-center p-10 md:px-20  md:pb-20 flex-col h-full dashboard">
       <div className="grid gap-4 md:grid-cols-3  w-full">
@@ -48,7 +87,7 @@ const Dashboard = () => {
           <div className="flex flex-col">
             <h1 className="text-base">Regular wallet</h1>
             <h1 className="text-2xl md:text-2xl my-2">
-              <span className="font-semibold">10000.00</span>
+            <span className="font-semibold">{tokenBalance} Tokens</span>
             </h1>
           </div>
           <div className="grid grid-cols-2 gap-4 mt-2">
@@ -112,7 +151,7 @@ const Dashboard = () => {
         </div>
       </div>
       <StakingTable />
-    </div>
+      </div>
   );
 };
 
