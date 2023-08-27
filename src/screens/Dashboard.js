@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import StakingTable from "../components/StakingTable";
 import { useMetaMask } from "../hooks/useMetamask";
 import { ethers } from "ethers";
-import { CUSTOM_TOKEN_ADDRESS, CUSTOM_TOKEN_ABI } from "./constant/index.js";
+import { CUSTOM_TOKEN_ADDRESS, CUSTOM_TOKEN_ABI, STAKING_CONTRACT_ADDRESS, STAKING_ABI } from "./constant/index.js";
 
 const Dashboard = () => {
   const { wallet } = useMetaMask();
   const [account, setAccount] = useState("");
   const [tokenBalance, setTokenBalance] = useState(0);
+  const [stakeBalance, setStakeBalance] = useState(0);
+  const [plan, setPlan] = useState("");
 
   useEffect(() => {
     if (wallet && wallet.accounts && wallet.accounts.length > 0) {
@@ -29,7 +31,7 @@ const Dashboard = () => {
 
           const balance = await contract.balanceOf(account);
           const balanceInEth = ethers.utils.formatEther(balance); // Convert to ethers
-          const decBalance = Number(balanceInEth).toFixed(2)
+          const decBalance = parseFloat(balanceInEth).toFixed(2);
           setTokenBalance(decBalance);
         } catch (error) {
           console.error("Error fetching token balance:", error);
@@ -40,15 +42,72 @@ const Dashboard = () => {
     getWalletBalance(); // Call the function when the component mounts or when the account changes
   }, [account]);
 
+  useEffect(() => {
+    const getStakeBalance = async () => {
+      if (account) {
+        try {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = provider.getSigner();
+          const contract = new ethers.Contract(
+            STAKING_CONTRACT_ADDRESS,
+            STAKING_ABI,
+            signer
+          );
+          //console.log(contract.address);
+          const stake_balance = await contract.totalStaked();
+          
+          const stake_balanceInEth = ethers.utils.formatEther(stake_balance); // Convert to ethers
+          const stake_decBalance = Number(stake_balanceInEth).toFixed(2)
+          setStakeBalance(stake_balanceInEth/1000000000000000000);
+        } catch (error) {
+          console.error("Error fetching token balance:", error);
+        }
+      }
+    };
+
+    getStakeBalance(); // Call the function when the component mounts or when the account changes
+  }, [account]);
+
+
+  useEffect(() => {
+    const getPlan = async () => {
+      if (account) {
+        try {
+            if( stakeBalance <= 10000){
+              setPlan("None");
+            }
+            else if(stakeBalance > 10000 && stakeBalance <= 50000){
+              setPlan("Bronze");
+            }
+            else if(stakeBalance > 50000 && stakeBalance <= 100000){
+              setPlan("Silver");
+            }
+            else if(stakeBalance > 100000 && stakeBalance <= 250000){
+              setPlan("Gold");
+            }
+            else if(stakeBalance > 250000 && stakeBalance <= 400000){
+              setPlan("Platinum");
+            }
+            else if(stakeBalance > 400000){
+              setPlan("Diamond");
+            }
+        } catch (error) {
+          console.error("Error fetching token balance:", error);
+        }
+      }
+    };
+
+    getPlan(); // Call the function when the component mounts or when the account changes
+  }, [account]);
 
   return (
     <div className="flex w-full justify-center items-center p-10 md:px-20  md:pb-20 flex-col h-full dashboard">
       <div className="grid gap-4 md:grid-cols-3  w-full">
         <div className="dcard text-white md:max-w-md w-full md:p-6 p-4 rounded-xl">
           <div className="flex flex-col">
-            <h1 className="text-base">Stake wallet</h1>
+            <h1 className="text-base">Stake wallet  {plan}</h1>
             <h1 className="text-2xl md:text-2xl my-2">
-              <span className="font-semibold">10000.00</span>
+              <span className="font-semibold">{stakeBalance}</span>
             </h1>
           </div>
           <div className="grid grid-cols-2 gap-4 mt-2">

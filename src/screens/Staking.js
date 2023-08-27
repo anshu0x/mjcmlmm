@@ -1,15 +1,23 @@
 import React from "react";
 import { ethers , utils, providers } from "ethers";
 import { useState, useEffect } from "react";
+import { useMetaMask } from "../hooks/useMetamask";
 import { STAKING_CONTRACT_ADDRESS, STAKING_ABI, CUSTOM_TOKEN_ADDRESS, CUSTOM_TOKEN_ABI } from "./constant/index.js";
 
 
 const Staking = (props) => {
-
-  const plan = 1;
-  const duration = 90; 
   const teamSize = 0;
+  const { wallet } = useMetaMask();
   const amount = 30000;
+  const [account, setAccount] = useState("");
+
+  useEffect(() => {
+    if (wallet && wallet.accounts && wallet.accounts.length > 0) {
+      setAccount(wallet.accounts[0]);
+    }
+  }, [wallet]);
+
+
   const stakingToken = async (event) => {
     event.preventDefault();
     try {
@@ -19,9 +27,10 @@ const Staking = (props) => {
     const contract = new ethers.Contract(STAKING_CONTRACT_ADDRESS, STAKING_ABI, signer);
     //const TT_Token_contract = new ethers.Contract(CUSTOM_TOKEN_ADDRESS, CUSTOM_TOKEN_ABI, signer);
     //onsole.log(contract.address);
+    const userStakeCount = await contract.userCount(account);
+    const StakeCount = parseInt(userStakeCount, 16);
 
-
-    const tx = await contract.stakeTokens(plan , duration, teamSize);
+    const tx = await contract.stakeTokens(amount, teamSize, StakeCount);
     // wait for the transaction to get mined
     await tx.wait();
     if (tx == "false"){

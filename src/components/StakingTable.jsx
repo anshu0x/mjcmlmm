@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ethers, BigNumber  } from "ethers";
+import { ethers } from "ethers";
 import { useMetaMask } from "../hooks/useMetamask";
 import { STAKING_CONTRACT_ADDRESS, STAKING_ABI } from "./constant/index.js";
 
@@ -27,28 +27,46 @@ const StakingTable = (props) => {
             signer
           );
 
-          // Fetch user staking data
-          const tx = await contract.users(account);
+          // Fetch the number of stakes made by the user
+          const userStakeCount = await contract.userCount(account);
+          const userCountDecimal = parseInt(userStakeCount, 16);
+           // console.log(userCountDecimal);
+          // Fetch and process staking details for each stake
+          const stakingDetails = [];
+          for (let index = 101; index <= 100+userCountDecimal; index++) {
+            const user = await contract.users(account, index);
 
-          // Process the data and create an object
-          const stakedAmount = tx.stakedAmount.toString(); // Convert to string
-          const stakingEndTime = tx.stakingEndTime.toNumber(); // Convert to number
-          const currentBlockTime = Math.floor(Date.now() / 1000);
-          const remainingDays = Math.max(0, Math.floor((stakingEndTime - currentBlockTime) / (60 * 60 * 24)));
-          const plan = tx.plan.toString(); // Convert to string
+            // Process the data and create an object
+            const stakedAmount = ethers.utils.formatEther(user.stakedAmount); // Convert to ETH
+            console.log(stakedAmount);
+            const stakingEndTimeInSeconds = user.stakingEndTime.toNumber();
+            const currentBlockTime = Math.floor(Date.now() / 1000);
+           
+const endDateTime = new Date(stakingEndTimeInSeconds * 1000); // Convert to milliseconds
+const endDate = endDateTime.toLocaleString(); 
+            const remainingDays = Math.max(
+              0,
+              Math.floor((stakingEndTimeInSeconds - currentBlockTime) / (60 * 60 * 24))
+            );
+            const plan = user.plan.toString(); // Convert to string
 
-          // Create an object with the data
-          const rowData = {
-            stakedAmount,
-            daysLeft: remainingDays,
-            plan,
-          };
+            // Create an object with the data
+            const rowData = {
+              id: index,
+              stakedAmount,
+              daysLeft: remainingDays,
+              endDate,
+            };
+
+            // Add the staking details to the array
+            stakingDetails.push(rowData);
+          }
 
           // Update the tableData array with the new data
-          setTableData([rowData]);
+          setTableData(stakingDetails);
 
           // Count unique plans
-          const uniquePlans = new Set(tableData.map((data) => data.plan));
+          const uniquePlans = new Set(stakingDetails.map((data) => data.plan));
           setPlanCount(uniquePlans.size);
         } catch (error) {
           console.error(error);
@@ -77,32 +95,28 @@ const StakingTable = (props) => {
               Days Left
             </th>
             <th scope="col" className="px-6 py-3">
-              Plan
-            </th>
-            <th scope="col" className="px-6 py-3">
               Date & Time
             </th>
           </tr>
         </thead>
         <tbody>
-          {tableData.map((data, index) => (
-            <tr
-              key={index}
-              className="bg-[#1E1E1F] border-t border-[#444242] text-white"
-            >
-              <th
-                scope="row"
-                className="px-6 py-4 font-medium whitespace-nowrap"
-              >
-                {index + 1}
-              </th>
-              <td className="px-6 py-4">{data.stakedAmount}</td>
-              <td className="px-6 py-4">{data.daysLeft}</td>
-              <td className="px-6 py-4">{data.plan}</td>
-              <td className="px-6 py-4">20/12/2023 11:20</td>
-            </tr>
-          ))}
-        </tbody>
+        {tableData.map((data, index) => (
+  <tr
+    key={index}
+    className="bg-[#1E1E1F] border-t border-[#444242] text-white"
+  >
+    <th
+      scope="row"
+      className="px-6 py-4 font-medium whitespace-nowrap"
+    >
+      {index + 1}
+    </th>
+    <td className="px-6 py-4">{data.stakedAmount}</td>
+    <td className="px-6 py-4">{data.daysLeft}</td>
+    <td className="px-6 py-4">{data.endDate}</td>
+  </tr>
+))}
+</tbody>
       </table>
       <div>
         <p>Plan Count: {planCount}</p>
